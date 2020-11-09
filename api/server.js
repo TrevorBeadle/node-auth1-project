@@ -43,6 +43,7 @@ server.post("/api/register", async (req, res, next) => {
     const user = { username, password: hash };
     const newUser = await Users.add(user);
     if (newUser) {
+      req.session.user = newUser;
       res.status(201).json(newUser);
     } else {
       next({ code: 400, message: "unable to add new user" });
@@ -52,7 +53,7 @@ server.post("/api/register", async (req, res, next) => {
   }
 });
 
-server.post("api/login", async (req, res, next) => {
+server.post("/api/login", async (req, res, next) => {
   const { username, password } = req.body;
   try {
     const user = await Users.findBy({ username });
@@ -70,3 +71,9 @@ server.post("api/login", async (req, res, next) => {
 server.use((err, req, res, next) => {
   res.status(err.code).json({ message: err.message });
 });
+
+server.use("*", (req, res) => {
+  res.status(404).json({ message: "not found" });
+});
+
+module.exports = server;
